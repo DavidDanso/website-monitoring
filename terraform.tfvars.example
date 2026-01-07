@@ -1,6 +1,6 @@
 # Copy this file to terraform.tfvars and update with your values
 
-email_address = "your-email@example.com"
+email_address = "davidkellybrownson@gmail.com"
 
 urls_to_check = [
   "https://google.com",
