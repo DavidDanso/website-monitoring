@@ -2,8 +2,6 @@
 
 A serverless, automated website monitoring system built with Terraform and AWS. It periodicially checks the health of your websites and sends email alerts via Amazon SNS if any site is down or returns a non-200 status code.
 
-![Uptime Monitor Architecture](https://raw.githubusercontent.com/ABS-L1/uptime-monitor/main/architecture.png) *Note: Replace with actual architecture diagram if available*
-
 ## ✨ Features
 
 - **Automated Monitoring**: Leverages Amazon EventBridge to trigger checks at configurable intervals (default: every 5 minutes).
