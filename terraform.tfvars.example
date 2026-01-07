@@ -1,0 +1,13 @@
+# Copy this file to terraform.tfvars and update with your values
+
+email_address = "your-email@example.com"
+
+urls_to_check = [
+  "https://google.com",
+  "https://github.com",
+  "https://aws.amazon.com"
+]
+
+check_interval_minutes = 5
+
+aws_region = "us-east-1"
