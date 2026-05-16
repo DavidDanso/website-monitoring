@@ -8,6 +8,7 @@ from unittest.mock import patch, MagicMock
 # because index.py loads them at module initialization time.
 os.environ['SNS_TOPIC_ARN'] = 'arn:aws:sns:us-east-1:123456789012:MyTopic'
 os.environ['URLS_TO_CHECK'] = json.dumps(['https://example.com'])
+os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 # Add the directory containing this file to the python path so 'import index' works
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
