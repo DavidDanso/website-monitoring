@@ -61,7 +61,7 @@ def send_alert(failed_urls):
     
     message_lines = [
         "Website Monitoring Alert",
-        f"Time: {datetime.utcnow().isoformat()}",
+        f"Time: {datetime.now(timezone.utc).isoformat()}",
         "",
         "The following sites are down:",
         ""
