@@ -2,7 +2,7 @@ import json
 import os
 import urllib3
 import boto3
-from datetime import datetime
+from datetime import datetime, timezone
 
 http = urllib3.PoolManager()
 sns_client = boto3.client('sns')
@@ -11,7 +11,7 @@ SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']
 URLS_TO_CHECK = json.loads(os.environ['URLS_TO_CHECK'])
 
 def lambda_handler(event, context):
-    print(f"Starting website checks at {datetime.now(datetime.UTC).isoformat()}")
+    print(f"Starting website checks at {datetime.now(timezone.utc).isoformat()}")
     
     failed_urls = []
     
