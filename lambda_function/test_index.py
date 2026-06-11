@@ -2,14 +2,10 @@ import unittest
 import json
 from unittest.mock import patch, MagicMock
 
-
-# Mock environment variables before importing index
-# This prevents os.environ KeyError at import time
 ENV_VARS = {
     'SNS_TOPIC_ARN': 'arn:aws:sns:us-east-1:123456789:test-topic',
     'URLS_TO_CHECK': json.dumps(['https://example.com', 'https://google.com'])
 }
-
 
 class TestLambdaHandler(unittest.TestCase):
 
@@ -30,9 +26,13 @@ class TestLambdaHandler(unittest.TestCase):
         self.assertEqual(len(body['failures']), 0)
 
     # Test that a non-200 response is treated as a failure
+    @patch('index.boto3.client')
     @patch('index.http')
     @patch.dict('os.environ', ENV_VARS)
-    def test_non_200_response_is_failure(self, mock_http):
+    def test_non_200_response_is_failure(self, mock_http, mock_boto):
+        mock_sns = MagicMock()
+        mock_boto.return_value = mock_sns
+
         mock_response = MagicMock()
         mock_response.status = 500
         mock_http.request.return_value = mock_response
@@ -46,9 +46,13 @@ class TestLambdaHandler(unittest.TestCase):
         self.assertEqual(body['failures'][0]['status'], 500)
 
     # Test that a connection exception is recorded as a failure
+    @patch('index.boto3.client')
     @patch('index.http')
     @patch.dict('os.environ', ENV_VARS)
-    def test_connection_error_is_failure(self, mock_http):
+    def test_connection_error_is_failure(self, mock_http, mock_boto):
+        mock_sns = MagicMock()
+        mock_boto.return_value = mock_sns
+
         mock_http.request.side_effect = Exception("Connection timed out")
 
         import index
