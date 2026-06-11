@@ -1,3 +1,4 @@
 pytest
 boto3
 urllib3
+flake8
