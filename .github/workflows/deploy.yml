@@ -74,8 +74,8 @@ jobs:
           path: tfplan-output.txt
           retention-days: 1
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve -input=false
 
 #   deploy:
 #     runs-on: ubuntu-latest
