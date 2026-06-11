@@ -11,7 +11,10 @@ def lambda_handler(event, context):
     sns_topic_arn = os.environ['SNS_TOPIC_ARN']
     urls_to_check = json.loads(os.environ['URLS_TO_CHECK'])
 
-    print(f"Starting website checks at {datetime.now(timezone.utc).isoformat()}")
+    print(
+        f"Starting website checks at {
+            datetime.now(
+                timezone.utc).isoformat()}")
 
     failed_urls = []
 

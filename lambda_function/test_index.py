@@ -7,6 +7,7 @@ ENV_VARS = {
     'URLS_TO_CHECK': json.dumps(['https://example.com', 'https://google.com'])
 }
 
+
 class TestLambdaHandler(unittest.TestCase):
 
     # Test that a 200 response is treated as healthy — no failures recorded
