@@ -1,18 +1,20 @@
+import index
 import os
 import sys
 import json
 import pytest
 from unittest.mock import patch, MagicMock
 
-# We must set these environment variables before importing index.py 
+# We must set these environment variables before importing index.py
 # because index.py loads them at module initialization time.
 os.environ['SNS_TOPIC_ARN'] = 'arn:aws:sns:us-east-1:123456789012:MyTopic'
 os.environ['URLS_TO_CHECK'] = json.dumps(['https://example.com'])
 os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
-# Add the directory containing this file to the python path so 'import index' works
+# Add the directory containing this file to the python path so 'import
+# index' works
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import index
+
 
 @patch('index.http.request')
 @patch('index.send_alert')
@@ -31,6 +33,7 @@ def test_200_response_healthy(mock_send_alert, mock_request):
     body = json.loads(result['body'])
     assert body['failed'] == 0
     mock_send_alert.assert_not_called()
+
 
 @patch('index.http.request')
 @patch('index.send_alert')
