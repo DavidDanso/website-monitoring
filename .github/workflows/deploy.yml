@@ -1,4 +1,4 @@
-name: website-monitoring-ci
+lename: website-monitoring-ci
 
 on:
   push:

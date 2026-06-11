@@ -57,7 +57,7 @@ def lambda_handler(event, context):
     }
 
 def send_alert(failed_urls):
-    subject = f"⚠️ Website Alert: {len(failed_urls)} Site(s) Down"
+    subject = f"⚠️ Website Alert: {len(failed_urls)} Site(s) Down" 
     
     message_lines = [
         "Website Monitoring Alert",
