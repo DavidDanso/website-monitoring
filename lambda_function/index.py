@@ -5,21 +5,17 @@ import boto3
 from datetime import datetime, timezone
 
 http = urllib3.PoolManager()
-sns_client = boto3.client('sns')
-
-SNS_TOPIC_ARN = os.environ['SNS_TOPIC_ARN']
-URLS_TO_CHECK = json.loads(os.environ['URLS_TO_CHECK'])
 
 
 def lambda_handler(event, context):
-    print(
-        f"Starting website checks at {
-            datetime.now(
-                timezone.utc).isoformat()}")
+    sns_topic_arn = os.environ['SNS_TOPIC_ARN']
+    urls_to_check = json.loads(os.environ['URLS_TO_CHECK'])
+
+    print(f"Starting website checks at {datetime.now(timezone.utc).isoformat()}")
 
     failed_urls = []
 
-    for url in URLS_TO_CHECK:
+    for url in urls_to_check:
         try:
             print(f"Checking {url}...")
             response = http.request('GET', url, timeout=10.0)
@@ -44,9 +40,8 @@ def lambda_handler(event, context):
                 'reason': str(e)
             })
 
-    # Send notification if any URLs failed
     if failed_urls:
-        send_alert(failed_urls)
+        send_alert(failed_urls, sns_topic_arn)
         print(f"Alert sent for {len(failed_urls)} failed URL(s)")
     else:
         print("All URLs are healthy")
@@ -54,14 +49,16 @@ def lambda_handler(event, context):
     return {
         'statusCode': 200,
         'body': json.dumps({
-            'checked': len(URLS_TO_CHECK),
+            'checked': len(urls_to_check),
             'failed': len(failed_urls),
             'failures': failed_urls
         })
     }
 
 
-def send_alert(failed_urls):
+def send_alert(failed_urls, sns_topic_arn):
+    sns_client = boto3.client('sns')
+
     subject = f"⚠️ Website Alert: {len(failed_urls)} Site(s) Down"
 
     message_lines = [
@@ -82,7 +79,7 @@ def send_alert(failed_urls):
 
     try:
         sns_client.publish(
-            TopicArn=SNS_TOPIC_ARN,
+            TopicArn=sns_topic_arn,
             Subject=subject,
             Message=message
         )

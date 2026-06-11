@@ -1,56 +1,98 @@
-import index
-import os
-import sys
+import unittest
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 
-# We must set these environment variables before importing index.py
-# because index.py loads them at module initialization time.
-os.environ['SNS_TOPIC_ARN'] = 'arn:aws:sns:us-east-1:123456789012:MyTopic'
-os.environ['URLS_TO_CHECK'] = json.dumps(['https://example.com'])
-os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
-# Add the directory containing this file to the python path so 'import
-# index' works
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Mock environment variables before importing index
+# This prevents os.environ KeyError at import time
+ENV_VARS = {
+    'SNS_TOPIC_ARN': 'arn:aws:sns:us-east-1:123456789:test-topic',
+    'URLS_TO_CHECK': json.dumps(['https://example.com', 'https://google.com'])
+}
 
 
-@patch('index.http.request')
-@patch('index.send_alert')
-def test_200_response_healthy(mock_send_alert, mock_request):
-    """Test that a 200 response is treated as healthy."""
-    # Setup mock response for the HTTP GET request
-    mock_response = MagicMock()
-    mock_response.status = 200
-    mock_request.return_value = mock_response
+class TestLambdaHandler(unittest.TestCase):
 
-    # Execute the lambda handler
-    result = index.lambda_handler({}, {})
+    # Test that a 200 response is treated as healthy — no failures recorded
+    @patch('index.http')
+    @patch.dict('os.environ', ENV_VARS)
+    def test_200_response_is_healthy(self, mock_http):
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_http.request.return_value = mock_response
 
-    # Assert that no failures were recorded and no alert was sent
-    assert result['statusCode'] == 200
-    body = json.loads(result['body'])
-    assert body['failed'] == 0
-    mock_send_alert.assert_not_called()
+        import index
+        result = index.lambda_handler({}, {})
+        body = json.loads(result['body'])
+
+        self.assertEqual(result['statusCode'], 200)
+        self.assertEqual(body['failed'], 0)
+        self.assertEqual(len(body['failures']), 0)
+
+    # Test that a non-200 response is treated as a failure
+    @patch('index.http')
+    @patch.dict('os.environ', ENV_VARS)
+    def test_non_200_response_is_failure(self, mock_http):
+        mock_response = MagicMock()
+        mock_response.status = 500
+        mock_http.request.return_value = mock_response
+
+        import index
+        result = index.lambda_handler({}, {})
+        body = json.loads(result['body'])
+
+        self.assertEqual(result['statusCode'], 200)
+        self.assertEqual(body['failed'], 2)
+        self.assertEqual(body['failures'][0]['status'], 500)
+
+    # Test that a connection exception is recorded as a failure
+    @patch('index.http')
+    @patch.dict('os.environ', ENV_VARS)
+    def test_connection_error_is_failure(self, mock_http):
+        mock_http.request.side_effect = Exception("Connection timed out")
+
+        import index
+        result = index.lambda_handler({}, {})
+        body = json.loads(result['body'])
+
+        self.assertEqual(body['failed'], 2)
+        self.assertEqual(body['failures'][0]['status'], 'error')
+        self.assertIn('Connection timed out', body['failures'][0]['reason'])
+
+    # Test that send_alert is called when failures exist
+    @patch('index.boto3.client')
+    @patch('index.http')
+    @patch.dict('os.environ', ENV_VARS)
+    def test_alert_sent_on_failure(self, mock_http, mock_boto):
+        mock_response = MagicMock()
+        mock_response.status = 404
+        mock_http.request.return_value = mock_response
+
+        mock_sns = MagicMock()
+        mock_boto.return_value = mock_sns
+
+        import index
+        index.lambda_handler({}, {})
+
+        mock_sns.publish.assert_called_once()
+
+    # Test that no alert is sent when all URLs are healthy
+    @patch('index.boto3.client')
+    @patch('index.http')
+    @patch.dict('os.environ', ENV_VARS)
+    def test_no_alert_sent_when_healthy(self, mock_http, mock_boto):
+        mock_response = MagicMock()
+        mock_response.status = 200
+        mock_http.request.return_value = mock_response
+
+        mock_sns = MagicMock()
+        mock_boto.return_value = mock_sns
+
+        import index
+        index.lambda_handler({}, {})
+
+        mock_sns.publish.assert_not_called()
 
 
-@patch('index.http.request')
-@patch('index.send_alert')
-def test_non_200_response_failure(mock_send_alert, mock_request):
-    """Test that a non-200 response (e.g. 500) is treated as a failure."""
-    # Setup mock response to simulate a server error
-    mock_response = MagicMock()
-    mock_response.status = 500
-    mock_request.return_value = mock_response
-
-    # Execute the lambda handler
-    result = index.lambda_handler({}, {})
-
-    # Assert that the failure was recorded and an alert was triggered
-    assert result['statusCode'] == 200
-    body = json.loads(result['body'])
-    assert body['failed'] == 1
-    assert body['failures'][0]['url'] == 'https://example.com'
-    assert body['failures'][0]['status'] == 500
-    mock_send_alert.assert_called_once()
+if __name__ == '__main__':
+    unittest.main()
