@@ -18,5 +18,5 @@ variable "urls_to_check" {
 variable "check_interval_minutes" {
   description = "How often to check URLs (in minutes)"
   type        = number
-  default = 5
+  default     = 5
 }

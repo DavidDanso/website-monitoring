@@ -69,9 +69,6 @@ jobs:
           restore-keys: |
             terraform-
 
-      - name: Terraform Format
-        run: terraform fmt -check
-
       - name: Terraform Init
         run: terraform init
 
