@@ -21,7 +21,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   PYTHON_VERSION: "3.12"
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+  TF_VAR_aws_region: ${{ secrets.TF_VAR_aws_region }}
   TF_VAR_email_address: ${{ secrets.TF_VAR_email_address }}
   TF_VAR_urls_to_check: ${{ secrets.TF_VAR_urls_to_check }}
   TF_VAR_check_interval_minutes: ${{ secrets.TF_VAR_check_interval_minutes }}
