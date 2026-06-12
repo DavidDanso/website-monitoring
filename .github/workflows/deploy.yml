@@ -21,10 +21,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   PYTHON_VERSION: "3.12"
-  TF_VAR_aws_region: ${{ secrets.TF_VAR_aws_region }}
   TF_VAR_email_address: ${{ secrets.TF_VAR_email_address }}
-  TF_VAR_urls_to_check: ${{ secrets.TF_VAR_urls_to_check }}
-  TF_VAR_check_interval_minutes: ${{ secrets.TF_VAR_check_interval_minutes }}
 
 jobs:
   validate:
@@ -90,3 +87,25 @@ jobs:
           name: tfplan-output
           path: tfplan-output.txt
           retention-days: 1
+
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs: [plan]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Plan Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-output
+
+      - name: Prints the plan summary
+        run: cat tfplan-output.txt
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve
+      
+        
+        
