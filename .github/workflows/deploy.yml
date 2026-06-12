@@ -119,11 +119,14 @@ jobs:
         with:
           name: tfplan-output
 
-      - name: Prints the plan summary
-        run: cat tfplan-output.txt
+      # - name: Prints the plan summary
+      #   run: cat tfplan-output.txt
 
-      - name: Terraform apply
-        run: terraform apply -auto-approve -input=false
+      # - name: Terraform apply
+      #   run: terraform apply -auto-approve -input=false
+
+      - name: Terraform destroy
+        run: terraform destroy -auto-approve -input=false
       
         
         
