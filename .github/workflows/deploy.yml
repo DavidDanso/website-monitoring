@@ -79,7 +79,7 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -no-color > tfplan-output.txt
+        run: terraform plan -no-color -input=false 2>&1 | tee tfplan-output.txt
 
       - name: Upload Plan Output
         uses: actions/upload-artifact@v4
