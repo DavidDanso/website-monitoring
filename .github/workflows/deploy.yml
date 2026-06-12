@@ -93,6 +93,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Cache Terraform providers
+        uses: actions/cache@v4
+        with:
+          path: .terraform
+          key: terraform-${{ hashFiles('.terraform.lock.hcl') }}
+          restore-keys: |
+            terraform-
+
+      - name: Terraform Init
+        run: terraform init
+
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
@@ -102,7 +123,7 @@ jobs:
         run: cat tfplan-output.txt
 
       - name: Terraform apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -input=false
       
         
         
