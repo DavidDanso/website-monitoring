@@ -21,6 +21,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   PYTHON_VERSION: "3.12"
+  TF_VAR_email_address: ${{ secrets.TF_VAR_email_address }}
 
 jobs:
   validate:
